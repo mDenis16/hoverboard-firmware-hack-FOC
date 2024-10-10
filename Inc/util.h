@@ -79,7 +79,7 @@ void beepCount(uint8_t cnt, uint8_t freq, uint8_t pattern);
 void beepLong(uint8_t freq);
 void beepShort(uint8_t freq);
 void beepShortMany(uint8_t cnt, int8_t dir);
-void calcAvgSpeed(void);
+
 void adcCalibLim(void);
 void updateCurSpdLim(void);
 void standstillHold(void);
@@ -91,7 +91,7 @@ int  checkInputType(int16_t min, int16_t mid, int16_t max);
 void calcInputCmd(InputStruct *in, int16_t out_min, int16_t out_max);
 void readInputRaw(void);
 void handleTimeout(void);
-void readCommand(void);
+
 void usart2_rx_check(void);
 void usart3_rx_check(void);
 #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
@@ -109,7 +109,7 @@ void sideboardLeds(uint8_t *leds);
 void sideboardSensors(uint8_t sensors);
 
 // Poweroff Functions
-void saveConfig(void);
+
 void poweroff(void);
 void poweroffPressCheck(void);
 

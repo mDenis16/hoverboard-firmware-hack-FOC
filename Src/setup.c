@@ -368,14 +368,6 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pull  = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
-  GPIO_InitStruct.Pin = LEFT_HALL_U_PIN;
-  HAL_GPIO_Init(LEFT_HALL_U_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LEFT_HALL_V_PIN;
-  HAL_GPIO_Init(LEFT_HALL_V_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LEFT_HALL_W_PIN;
-  HAL_GPIO_Init(LEFT_HALL_W_PORT, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = RIGHT_HALL_U_PIN;
   HAL_GPIO_Init(RIGHT_HALL_U_PORT, &GPIO_InitStruct);
@@ -389,14 +381,6 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Pin = CHARGER_PIN;
   HAL_GPIO_Init(CHARGER_PORT, &GPIO_InitStruct);
-
-  #if defined(SUPPORT_BUTTONS_LEFT) || defined(SUPPORT_BUTTONS_RIGHT)
-  GPIO_InitStruct.Pin = BUTTON1_PIN;
-  HAL_GPIO_Init(BUTTON1_PORT, &GPIO_InitStruct);
-  GPIO_InitStruct.Pin = BUTTON2_PIN;
-  HAL_GPIO_Init(BUTTON2_PORT, &GPIO_InitStruct);
-  #endif
-  
 
   GPIO_InitStruct.Pull = GPIO_NOPULL;
 
@@ -418,15 +402,6 @@ void MX_GPIO_Init(void) {
 
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 
-  GPIO_InitStruct.Pin = LEFT_DC_CUR_PIN;
-  HAL_GPIO_Init(LEFT_DC_CUR_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LEFT_U_CUR_PIN;
-  HAL_GPIO_Init(LEFT_U_CUR_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LEFT_V_CUR_PIN;
-  HAL_GPIO_Init(LEFT_V_CUR_PORT, &GPIO_InitStruct);
-
   GPIO_InitStruct.Pin = RIGHT_DC_CUR_PIN;
   HAL_GPIO_Init(RIGHT_DC_CUR_PORT, &GPIO_InitStruct);
 
@@ -439,33 +414,8 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pin = DCLINK_PIN;
   HAL_GPIO_Init(DCLINK_PORT, &GPIO_InitStruct);
 
-  //Analog in
-  #if !defined(SUPPORT_BUTTONS_LEFT)
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  #endif
 
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-
-  GPIO_InitStruct.Pin = LEFT_TIM_UH_PIN;
-  HAL_GPIO_Init(LEFT_TIM_UH_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LEFT_TIM_VH_PIN;
-  HAL_GPIO_Init(LEFT_TIM_VH_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LEFT_TIM_WH_PIN;
-  HAL_GPIO_Init(LEFT_TIM_WH_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LEFT_TIM_UL_PIN;
-  HAL_GPIO_Init(LEFT_TIM_UL_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LEFT_TIM_VL_PIN;
-  HAL_GPIO_Init(LEFT_TIM_VL_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LEFT_TIM_WL_PIN;
-  HAL_GPIO_Init(LEFT_TIM_WL_PORT, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = RIGHT_TIM_UH_PIN;
   HAL_GPIO_Init(RIGHT_TIM_UH_PORT, &GPIO_InitStruct);
@@ -528,56 +478,12 @@ void MX_TIM_Init(void) {
   sBreakDeadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
   HAL_TIMEx_ConfigBreakDeadTime(&htim_right, &sBreakDeadTimeConfig);
 
-  htim_left.Instance               = LEFT_TIM;
-  htim_left.Init.Prescaler         = 0;
-  htim_left.Init.CounterMode       = TIM_COUNTERMODE_CENTERALIGNED1;
-  htim_left.Init.Period            = 64000000 / 2 / PWM_FREQ;
-  htim_left.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
-  htim_left.Init.RepetitionCounter = 0;
-  htim_left.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  HAL_TIM_PWM_Init(&htim_left);
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-  sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_ENABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim_left, &sMasterConfig);
 
-  sTimConfig.InputTrigger = TIM_TS_ITR0;
-  sTimConfig.SlaveMode    = TIM_SLAVEMODE_GATED;
-  HAL_TIM_SlaveConfigSynchronization(&htim_left, &sTimConfig);
-
-  // Start counting >0 to effectively offset timers by the time it takes for one ADC conversion to complete.
-  // This method allows that the Phase currents ADC measurements are properly aligned with LOW-FET ON region for both motors
-  LEFT_TIM->CNT 		     = ADC_TOTAL_CONV_TIME;
-
-  sConfigOC.OCMode       = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse        = 0;
-  sConfigOC.OCPolarity   = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCNPolarity  = TIM_OCNPOLARITY_LOW;
-  sConfigOC.OCFastMode   = TIM_OCFAST_DISABLE;
-  sConfigOC.OCIdleState  = TIM_OCIDLESTATE_RESET;
-  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
-  HAL_TIM_PWM_ConfigChannel(&htim_left, &sConfigOC, TIM_CHANNEL_1);
-  HAL_TIM_PWM_ConfigChannel(&htim_left, &sConfigOC, TIM_CHANNEL_2);
-  HAL_TIM_PWM_ConfigChannel(&htim_left, &sConfigOC, TIM_CHANNEL_3);
-
-  sBreakDeadTimeConfig.OffStateRunMode  = TIM_OSSR_ENABLE;
-  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_ENABLE;
-  sBreakDeadTimeConfig.LockLevel        = TIM_LOCKLEVEL_OFF;
-  sBreakDeadTimeConfig.DeadTime         = DEAD_TIME;
-  sBreakDeadTimeConfig.BreakState       = TIM_BREAK_DISABLE;
-  sBreakDeadTimeConfig.BreakPolarity    = TIM_BREAKPOLARITY_LOW;
-  sBreakDeadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
-  HAL_TIMEx_ConfigBreakDeadTime(&htim_left, &sBreakDeadTimeConfig);
-
-  LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
+  
   RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
 
-  HAL_TIM_PWM_Start(&htim_left, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim_left, TIM_CHANNEL_2);
-  HAL_TIM_PWM_Start(&htim_left, TIM_CHANNEL_3);
-  HAL_TIMEx_PWMN_Start(&htim_left, TIM_CHANNEL_1);
-  HAL_TIMEx_PWMN_Start(&htim_left, TIM_CHANNEL_2);
-  HAL_TIMEx_PWMN_Start(&htim_left, TIM_CHANNEL_3);  
+ 
 
   HAL_TIM_PWM_Start(&htim_right, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim_right, TIM_CHANNEL_2);
@@ -585,8 +491,6 @@ void MX_TIM_Init(void) {
   HAL_TIMEx_PWMN_Start(&htim_right, TIM_CHANNEL_1);
   HAL_TIMEx_PWMN_Start(&htim_right, TIM_CHANNEL_2);
   HAL_TIMEx_PWMN_Start(&htim_right, TIM_CHANNEL_3);
-
-  htim_left.Instance->RCR = 1;
 
   __HAL_TIM_ENABLE(&htim_right);
 }
